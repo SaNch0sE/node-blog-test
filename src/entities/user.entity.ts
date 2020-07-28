@@ -14,7 +14,7 @@ export class Users {
   public login: string;
 
   @Column()
-  public password: boolean;
+  public password: string;
 
   @OneToMany(() => Articles, (article: Articles) => article.author)
   public articles: Articles[];
