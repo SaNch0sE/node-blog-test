@@ -4,7 +4,7 @@ import { Comments } from 'src/entities/comment.entity';
 
 export class ArticleDTO {
     @IsNotEmpty()
-    id: number;
+    id?: number;
   
     @IsNotEmpty()
     title: string;
@@ -13,13 +13,13 @@ export class ArticleDTO {
     content: string;
 
     @IsNotEmpty()
-    likes: number;
-  
-    @IsNotEmpty()
-    created_at: Date;
+    user_id: number;
 
     @IsNotEmpty()
-    user_id: number;
+    likes?: number;
+  
+    @IsNotEmpty()
+    created_at?: Date;
 
     @IsNotEmpty()
     author?: Users;

@@ -4,7 +4,7 @@ import { Articles } from 'src/entities/article.entity';
 
 export class UserDTO {
     @IsNotEmpty()
-    id: number;
+    id?: number;
   
     @IsNotEmpty()
     full_name: string;

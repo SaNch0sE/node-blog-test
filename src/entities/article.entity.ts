@@ -13,7 +13,7 @@ export class Articles {
   @Column()
   content: string;
 
-  @Column()
+  @Column({ default: 0 })
   likes: number;
 
   @CreateDateColumn()
