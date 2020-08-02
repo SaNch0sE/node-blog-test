@@ -21,7 +21,12 @@ export class BlogService {
     
     // Blog services
     getArticle(id: number): Promise<Articles> {
-        return this.articlesRepository.findOne(id);
+        return this.articlesRepository.createQueryBuilder('articles')
+        .leftJoin('articles.likes', 'article_likes')
+        .loadRelationCountAndMap('articles.likes', 'articles.likes')
+        .where({ id })
+        .printSql()
+        .getOne();
     }
 
     getArticles(): Promise<Articles[]> {
@@ -59,7 +64,12 @@ export class BlogService {
 
     // Comments services
     getComments(id: number): Promise<Comments[]> {
-        return this.commentsRepository.find({ where: { article: { id }}});
+        return this.commentsRepository.createQueryBuilder('comments')
+        .leftJoin('comments.likes', 'comment_likes')
+        .loadRelationCountAndMap('comments.likes', 'comments.likes')
+        .where({ article: { id }})
+        .printSql()
+        .getMany();
     }
 
     async newComment(body: CommentDTO): Promise<Comments | { error: string }> {
@@ -99,15 +109,15 @@ export class BlogService {
         }
     }
 
-    async getArticleLikes(id: number): Promise<number> {
-        const article = await this.articlesRepository.findOne(id);
-        return this.articleLikesRepository.createQueryBuilder().where({ article }).getCount()
-    }
+    // async getArticleLikes(id: number): Promise<number> {
+    //     const article = await this.articlesRepository.findOne(id);
+    //     return this.articleLikesRepository.createQueryBuilder().where({ article }).getCount()
+    // }
 
-    async getCommentLikes(id: number): Promise<number> {
-        const comment = await this.commentsRepository.findOne(id);
-        return this.commentLikesRepository.createQueryBuilder().where({ comment }).getCount()
-    }
+    // async getCommentLikes(id: number): Promise<number> {
+    //     const comment = await this.commentsRepository.findOne(id);
+    //     return this.commentLikesRepository.createQueryBuilder().where({ comment }).getCount()
+    // }
 
     async CommentLike(body: CommentDTO): Promise<CommentLikes | { error: string }> {
         const user = await this.usersRepository.findOne(body.user_id);

@@ -72,15 +72,15 @@ export class BlogController {
         res.json(article);
     }
 
-    @Get('article/:id/likes')
-    async getArticleLikes(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
-        const article = await this.blogService.getArticleLikes(params.id);
-        res.json(article);
-    }
+    // @Get('article/:id/likes')
+    // async getArticleLikes(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
+    //     const article = await this.blogService.getArticleLikes(params.id);
+    //     res.json(article);
+    // }
 
-    @Get('article/:id/comments/:cid/likes')
-    async getCommentLikes(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
-        const article = await this.blogService.getCommentLikes(params.id);
-        res.json(article);
-    }
+    // @Get('article/:id/comments/:cid/likes')
+    // async getCommentLikes(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
+    //     const article = await this.blogService.getCommentLikes(params.id);
+    //     res.json(article);
+    // }
 }
