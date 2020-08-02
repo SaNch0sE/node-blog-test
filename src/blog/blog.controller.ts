@@ -2,10 +2,17 @@ import { Controller, Get, Res, Post, Body, Param } from '@nestjs/common';
 import { Response } from 'express';
 import { BlogService } from './blog.service';
 import { ArticleDTO } from 'src/dto/article.dto';
+import { CommentDTO } from 'src/dto/comment.dto';
 
 @Controller('blog')
 export class BlogController {
     constructor(private readonly blogService: BlogService) {}
+
+    @Get('article/:id')
+    async getArticle(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
+        const article = await this.blogService.getArticle(params.id);
+        res.json(article);
+    }
 
     @Get('articles')
     async getArticles(@Res() res: Response): Promise<void> {
@@ -34,6 +41,46 @@ export class BlogController {
     @Post('remove/article')
     async removeArticle(@Body() body: ArticleDTO, @Res() res: Response): Promise<void> {
         const article = await this.blogService.removeArticle(body);
+        res.json(article);
+    }
+
+    @Get('article/:id/comments/all')
+    async getComments(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
+        const article = await this.blogService.getComments(params.id);
+        res.json(article);
+    }
+
+    @Post('article/:id/comments/new')
+    async commentArticle(@Body() body: CommentDTO, @Res() res: Response, @Param() params: { id: number }): Promise<void> {
+        body.article_id = params.id;
+        const article = await this.blogService.newComment(body);
+        res.json(article);
+    }
+
+    @Post('article/:id/liked')
+    async addArticleLike(@Body() body: ArticleDTO, @Res() res: Response, @Param() params: { id: number }): Promise<void> {
+        body.id = params.id;
+        const article = await this.blogService.addLike(body);
+        res.json(article);
+    }
+
+    @Post('article/:id/comments/:cid/liked')
+    async commentLike(@Body() body: CommentDTO, @Res() res: Response, @Param() params: { id: number, cid: number }): Promise<void> {
+        body.article_id = params.id;
+        body.user_id = params.cid;
+        const article = await this.blogService.CommentLike(body);
+        res.json(article);
+    }
+
+    @Get('article/:id/likes')
+    async getArticleLikes(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
+        const article = await this.blogService.getArticleLikes(params.id);
+        res.json(article);
+    }
+
+    @Get('article/:id/comments/:cid/likes')
+    async getCommentLikes(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
+        const article = await this.blogService.getCommentLikes(params.id);
         res.json(article);
     }
 }

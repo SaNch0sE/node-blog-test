@@ -15,8 +15,18 @@ export class AuthController {
     }
 
     @Post('register')
-    async newUser(@Body() body: UserDTO, @Res() res: Response): Promise<void> {
-        const articles = await this.authService.newUser(body);
-        res.json(articles);
+    async signUp(@Body() body: UserDTO, @Res() res: Response): Promise<void> {
+        const user = await this.authService.newUser(body);
+        res.json(user);
+    }
+
+    @Post('login')
+    async signIn(@Body() body: UserDTO, @Res() res: Response): Promise<void> {
+        const user = await this.authService.signIn(body);
+        if (user) {
+            res.json({ user_id: user.id });
+        } else {
+            res.json({ error: 'Bad creditionals' });
+        } 
     }
 }

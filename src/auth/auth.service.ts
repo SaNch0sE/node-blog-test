@@ -13,10 +13,20 @@ export class AuthService {
         return this.usersRepository.find();
     }
 
-    async newUser(user: UserDTO): Promise<Users> {
-        const data: UserDTO = user;
-        data.password = bcrypt.hashSync(user.password, 10);
-        const nuser = await this.usersRepository.create(data);
-        return this.usersRepository.save(nuser);
+    async newUser(user: UserDTO): Promise<Users | { error: string }> {
+        if (user.full_name && user.full_name !== '') {
+            const data: UserDTO = user;
+            data.password = bcrypt.hashSync(user.password, 10);
+            const nuser = await this.usersRepository.create(data);
+            return this.usersRepository.save(nuser);
+        }
+        return { error: 'Enter your full name'}
+    }
+
+    async signIn(body: UserDTO): Promise<Users | void> {
+        const user = await this.usersRepository.findOne({ where: { login: body.login }});
+        if(user && bcrypt.compareSync(body.password, user.password)) {
+            return user;
+        }
     }
 }

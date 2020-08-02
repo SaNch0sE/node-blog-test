@@ -7,7 +7,7 @@ export class UserDTO {
     id?: number;
   
     @IsNotEmpty()
-    full_name: string;
+    full_name?: string;
 
     @IsNotEmpty()
     login: string;

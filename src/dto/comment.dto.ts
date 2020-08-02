@@ -2,23 +2,20 @@ import { IsNotEmpty } from 'class-validator';
 
 export class CommentDTO {
     @IsNotEmpty()
-    id: number;
+    id?: number;
+
+    @IsNotEmpty()
+    text: string;
+
+    @IsNotEmpty()
+    likes?: number;
   
     @IsNotEmpty()
-    title: string;
+    created_at?: Date;
 
     @IsNotEmpty()
-    content: string;
+    user_id?: number;
 
     @IsNotEmpty()
-    likes: number;
-  
-    @IsNotEmpty()
-    created_at: Date;
-
-    @IsNotEmpty()
-    author: number;
-
-    @IsNotEmpty()
-    article: number;
+    article_id?: number;
   }
