@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 @Injectable()
 export class AppMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: () => void): void {
-    Logger.log(`Request -> ${req.rawHeaders}`, 'NestRouter', true);
+    Logger.log(`Request -> ${req.path}`, 'BlogController', true);
     next();
   }
 }
