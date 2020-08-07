@@ -4,6 +4,7 @@ import { AppMiddleware } from './app.middleware';
 import { AuthModule } from './auth/auth.module';
 import { BlogModule } from './blog/blog.module';
 import { BlogController } from './blog/blog.controller';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { BlogController } from './blog/blog.controller';
     AuthModule,
     BlogModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

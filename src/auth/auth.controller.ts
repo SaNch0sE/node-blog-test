@@ -1,4 +1,4 @@
-import { Controller, Res, Body, Post, UseGuards, Get, Req } from '@nestjs/common';
+import { Controller, Res, Body, Post, UseGuards, Get, Req, Render } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { UserDTO } from 'src/dto/user.dto';
@@ -11,6 +11,20 @@ export class AuthController {
     constructor(private readonly authService: AuthService,
         private readonly userService: UserService) {}
 
+    @Get('register')
+    @Render('register')
+    signUpView(): null {
+        return null;
+    }
+
+    @Get('login')
+    @Render('login')
+    signInView(): null {
+        return null;
+    }
+    /*
+    //// Api calls
+    */
     @Post('register')
     async signUp(@Body() body: UserDTO, @Res() res: Response): Promise<void> {
         const user = await this.authService.register(body);
@@ -35,7 +49,7 @@ export class AuthController {
         } 
     }
 
-    @Get('update-token')
+    @Post('update-token')
     updateToken(@Req() req: Request, @Res() res: Response): void {
         const resp: UpdatedTokens = this.authService.updateToken(req);
         switch (typeof resp) {
@@ -67,7 +81,7 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Get('logout')
+    @Post('logout')
     async getArticles(@Res() res: Response): Promise<void> {
         res.cookie('refresh', 'logged out', { expires: new Date(Date.now()), httpOnly: true });
         res.setHeader('Authorization', 'logged out');

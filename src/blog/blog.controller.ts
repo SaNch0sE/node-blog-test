@@ -1,38 +1,69 @@
-import { Controller, Get, Res, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Res, Post, Body, Param, UseGuards, Req, Render } from '@nestjs/common';
 import { Response } from 'express';
 import { BlogService } from './blog.service';
 import { ArticleDTO } from 'src/dto/article.dto';
 import { CommentDTO } from 'src/dto/comment.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UserDTO } from 'src/dto/user.dto';
+import { Articles } from 'src/entities/article.entity';
 
 @Controller('blog')
 export class BlogController {
     constructor(private readonly blogService: BlogService) {}
-
+    /*
+    //// View calls
+    */
     @UseGuards(AuthGuard('jwt'))
     @Get('article/:id')
-    async getArticle(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
-        const article = await this.blogService.getArticle(params.id);
-        res.json(article);
+    @Render('article')
+    async getArticle(@Res() res: Response, @Param() params: { id: number }): Promise<{ article: Articles }> {
+        const article: Articles = await this.blogService.getArticle(params.id);
+        return { article };
     }
+
     @UseGuards(AuthGuard('jwt'))
     @Get('articles')
-    async getArticles(@Res() res: Response): Promise<void> {
-        const articles = await this.blogService.getArticles();
-        res.json(articles);
+    @Render('articles')
+    async getArticles(): Promise<Articles[]> {
+        const articles: Articles[] = await this.blogService.getArticles();
+        return articles;
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Get('articles/user/:user_id')
-    async getUserArticles(@Res() res: Response, @Param() params: { user_id: number }): Promise<void> {
-        const user_articles = await this.blogService.getUserArticles(params.user_id);
-        res.json(user_articles);
+    @Render('user_article')
+    async getUserArticles(@Param() params: { user_id: number }): Promise<Articles[]> {
+        const user_articles: Articles[] = await this.blogService.getUserArticles(params.user_id);
+        return user_articles;
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Post('new/article')
-    async newArticle(@Req() req: { user: UserDTO }, @Body() body: ArticleDTO, @Res() res: Response): Promise<void> {
+    @Get('create/article')
+    @Render('new_article')
+    createArticle(): null {
+        return null;
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Get('update/article')
+    @Render('update_article')
+    updateArticle(): null {
+        return null;
+    }
+    /*
+    //// Api calls
+    */
+    @UseGuards(AuthGuard('jwt'))
+    @Post('article/:id/comments/new')
+    async commentArticle(@Req() req: { user: UserDTO }, @Body() body: CommentDTO, @Res() res: Response, @Param() params: { id: number }): Promise<void> {
+        body.article_id = params.id;
+        const article = await this.blogService.newComment(body);
+        res.json(article);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Post('create/article')
+    async apiCreateArticle(@Req() req: { user: UserDTO }, @Body() body: ArticleDTO, @Res() res: Response): Promise<void> {
         body.user_id = req.user.id;
         const article = await this.blogService.newArticle(body);
         res.json(article);
@@ -40,7 +71,7 @@ export class BlogController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('update/article')
-    async updateArticle(@Req() req: { user: UserDTO }, @Body() body: ArticleDTO, @Res() res: Response): Promise<void> {
+    async apiUpdateArticle(@Req() req: { user: UserDTO }, @Body() body: ArticleDTO, @Res() res: Response): Promise<void> {
         body.user_id = req.user.id;
         const article = await this.blogService.updateArticle(body);
         res.json(article);
@@ -48,22 +79,22 @@ export class BlogController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('remove/article')
-    async removeArticle(@Req() req: { user: UserDTO }, @Body() body: ArticleDTO, @Res() res: Response): Promise<void> {
+    async apiRemoveArticle(@Req() req: { user: UserDTO }, @Body() body: ArticleDTO, @Res() res: Response): Promise<void> {
         body.user_id = req.user.id;
         const article = await this.blogService.removeArticle(body);
         res.json(article);
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Get('article/:id/comments/all')
-    async getComments(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
+    @Post('article/:id/comments/all')
+    async apiGetComments(@Res() res: Response, @Param() params: { id: number }): Promise<void> {
         const article = await this.blogService.getComments(params.id);
         res.json(article);
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Post('article/:id/comments/new')
-    async commentArticle(@Req() req: { user: UserDTO }, @Body() body: CommentDTO, @Res() res: Response, @Param() params: { id: number }): Promise<void> {
+    async apiCommentArticle(@Req() req: { user: UserDTO }, @Body() body: CommentDTO, @Res() res: Response, @Param() params: { id: number }): Promise<void> {
         body.article_id = params.id;
         const article = await this.blogService.newComment(body);
         res.json(article);

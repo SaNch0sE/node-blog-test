@@ -24,6 +24,7 @@ export class BlogService {
         return this.articlesRepository.createQueryBuilder('articles')
         .leftJoin('articles.likes', 'article_likes')
         .loadRelationCountAndMap('articles.likes', 'articles.likes')
+        .leftJoinAndMapOne('articles.author', 'articles.author', 'users')
         .where({ id })
         .printSql()
         .getOne();
