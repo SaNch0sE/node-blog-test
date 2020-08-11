@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app.module';
 import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
+import AppModule from './app.module';
 
 dotenv.config();
 

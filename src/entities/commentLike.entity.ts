@@ -1,15 +1,21 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-import { Users } from './user.entity';
-import { Comments } from './comment.entity';
+import Users from './user.entity';
+import Comments from './comment.entity';
 
 @Entity()
-export class CommentLikes {
+export default class CommentLikes {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Users, (user: Users) => user.comments)
+  @ManyToOne(
+    () => Users,
+    (user: Users) => user.comments,
+  )
   public user: Users;
 
-  @ManyToOne(() => Comments, (comment: Comments) => comment.likes)
+  @ManyToOne(
+    () => Comments,
+    (comment: Comments) => comment.likes,
+  )
   public comment: Comments;
 }

@@ -1,10 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, CreateDateColumn } from 'typeorm';
-import { Users } from './user.entity';
-import { Comments } from './comment.entity';
-import { ArticleLikes } from './articleLike.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+} from 'typeorm';
+import Users from './user.entity';
+import Comments from './comment.entity';
+import ArticleLikes from './articleLike.entity';
 
 @Entity()
-export class Articles {
+export default class Articles {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -17,12 +24,21 @@ export class Articles {
   @CreateDateColumn()
   created_at: Date;
 
-  @ManyToOne(() => Users, (user: Users) => user.articles)
+  @ManyToOne(
+    () => Users,
+    (user: Users) => user.articles,
+  )
   public author: Users;
 
-  @OneToMany(() => Comments, (comment: Comments) => comment.article)
+  @OneToMany(
+    () => Comments,
+    (comment: Comments) => comment.article,
+  )
   public comments: Comments[];
 
-  @OneToMany(() => ArticleLikes, (likes: ArticleLikes) => likes.article)
+  @OneToMany(
+    () => ArticleLikes,
+    (likes: ArticleLikes) => likes.article,
+  )
   public likes: ArticleLikes[];
 }

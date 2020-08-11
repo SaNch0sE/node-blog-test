@@ -1,23 +1,23 @@
 import { IsNotEmpty } from 'class-validator';
-import { Comments } from 'src/entities/comment.entity';
-import { Articles } from 'src/entities/article.entity';
+import Comments from 'src/entities/comment.entity';
+import Articles from 'src/entities/article.entity';
 
-export class UserDTO {
-    @IsNotEmpty()
-    id?: number;
-  
-    @IsNotEmpty()
-    full_name?: string;
+export default class UserDTO {
+  @IsNotEmpty()
+  id?: number;
 
-    @IsNotEmpty()
-    login: string;
+  @IsNotEmpty()
+  full_name?: string;
 
-    @IsNotEmpty()
-    password: string;
+  @IsNotEmpty()
+  login: string;
 
-    @IsNotEmpty()
-    articles?: Articles[];
+  @IsNotEmpty()
+  password: string;
 
-    @IsNotEmpty()
-    comments?: Comments[];
-  }
+  @IsNotEmpty()
+  articles?: Articles[];
+
+  @IsNotEmpty()
+  comments?: Comments[];
+}

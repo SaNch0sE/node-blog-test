@@ -1,5 +1,6 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
+import AuthController from './auth.controller';
 
 describe('Auth Controller', () => {
   let controller: AuthController;

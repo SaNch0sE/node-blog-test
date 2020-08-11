@@ -1,5 +1,6 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { Test, TestingModule } from '@nestjs/testing';
-import { BlogController } from './blog.controller';
+import BlogController from './blog.controller';
 
 describe('Blog Controller', () => {
   let controller: BlogController;

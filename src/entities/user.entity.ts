@@ -1,11 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { Articles } from './article.entity';
-import { Comments } from './comment.entity';
-import { ArticleLikes } from './articleLike.entity';
-import { CommentLikes } from './commentLike.entity';
+import {
+  Entity, Column, PrimaryGeneratedColumn, OneToMany,
+} from 'typeorm';
+import Articles from './article.entity';
+import Comments from './comment.entity';
+import ArticleLikes from './articleLike.entity';
+import CommentLikes from './commentLike.entity';
 
 @Entity()
-export class Users {
+export default class Users {
   @PrimaryGeneratedColumn()
   public id: number;
 
@@ -18,15 +20,27 @@ export class Users {
   @Column()
   public password: string;
 
-  @OneToMany(() => Articles, (article: Articles) => article.author)
+  @OneToMany(
+    () => Articles,
+    (article: Articles) => article.author,
+  )
   public articles: Articles[];
 
-  @OneToMany(() => Comments, (comment: Comments) => comment.author)
+  @OneToMany(
+    () => Comments,
+    (comment: Comments) => comment.author,
+  )
   public comments: Comments[];
 
-  @OneToMany(() => ArticleLikes, (likes: ArticleLikes) => likes.user)
+  @OneToMany(
+    () => ArticleLikes,
+    (likes: ArticleLikes) => likes.user,
+  )
   public article_likes: ArticleLikes[];
 
-  @OneToMany(() => CommentLikes, (likes: CommentLikes) => likes.user)
+  @OneToMany(
+    () => CommentLikes,
+    (likes: CommentLikes) => likes.user,
+  )
   public comments_likes: CommentLikes[];
 }

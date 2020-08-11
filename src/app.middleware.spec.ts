@@ -1,4 +1,4 @@
-import { AppMiddleware } from './app.middleware';
+import AppMiddleware from './app.middleware';
 
 describe('AppMiddleware', () => {
   it('should be defined', () => {
