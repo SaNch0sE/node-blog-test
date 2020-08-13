@@ -7,20 +7,23 @@ import {
   Get,
   Req,
   Render,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthStatus, UpdatedTokens } from 'src/interfaces';
+import { JwtService } from '@nestjs/jwt';
+import { IAuthStatus, IPayload } from 'src/interfaces';
 import UserDTO from 'src/dto/user.dto';
-import UserService from './user.service';
+import UsersService from '../users/users.service';
 import AuthService from './auth.service';
 
 @Controller('auth')
 export default class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
-  ) { }
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Get('register')
   @Render('register')
@@ -46,14 +49,13 @@ export default class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async signIn(@Body() body: UserDTO, @Res() res: Response): Promise<void> {
-    const user = await this.userService.getUser(body);
+    const user = await this.usersService.getUser(body.login);
     if (!user) {
       res.json({ error: 'Bad creditionals' });
     } else {
-      const { token } = this.authService.createToken(user);
-      const { refresh } = this.authService.createRefresh(user);
-      res.setHeader('Authorization', `Bearer ${token}`);
-      res.cookie('refresh', refresh, {
+      const tokens = await this.authService.login(user);
+      res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
+      res.cookie('refresh', tokens.refreshToken, {
         expires: new Date(Date.now() + 7200000),
         httpOnly: true,
       });
@@ -64,36 +66,28 @@ export default class AuthController {
   }
 
   @Post('update-token')
-  updateToken(@Req() req: Request, @Res() res: Response): void {
-    const resp: UpdatedTokens = this.authService.updateToken(req);
-    switch (typeof resp) {
-    case 'undefined':
-      res.json({
-        status: 'Failed',
-        message: 'Logged out',
-      });
-      break;
-    default:
-      switch (resp.expired) {
-      case 1:
-        res.setHeader(resp.header[0], resp.header[1]);
-        res.cookie(resp.cookie[0], resp.cookie[1], resp.cookie[2]);
-        res.json({
-          status: 'Success',
-          message: 'Token updated',
-        });
-        break;
-      case 2:
-        res.json({
-          status: 'Failed',
-          message: 'No need to update',
-        });
-        break;
-      default:
-        break;
-      }
-      break;
+  @UseGuards(AuthGuard('jwt'))
+  async updateToken(@Req() req: Request, @Res() res: Response): Promise<void> {
+    const refreshToken = req.cookies.refresh;
+    const verifiedUser = this.jwtService.verify(refreshToken);
+    const oldRefreshToken = this.authService.getRefreshTokenById(verifiedUser.user_id);
+
+    // if the old refresh token is not equal to request refresh token then this user is unauthorized
+    if (!oldRefreshToken || oldRefreshToken !== refreshToken) {
+      throw new UnauthorizedException('Authentication credentials were missing or incorrect');
     }
+
+    const payload: IPayload = {
+      user_id: verifiedUser.id,
+    };
+
+    const newTokens = await this.authService.login({ id: payload.user_id });
+    res.json(newTokens);
+    res.setHeader('Authorization', `Bearer ${newTokens.accessToken}`);
+    res.cookie('refresh', newTokens.refreshToken, {
+      expires: new Date(Date.now() + 7200000),
+      httpOnly: true,
+    });
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -104,7 +98,7 @@ export default class AuthController {
       httpOnly: true,
     });
     res.setHeader('Authorization', 'logged out');
-    const resp: AuthStatus = {
+    const resp: IAuthStatus = {
       status: 'Success',
       message: 'Logged out',
     };

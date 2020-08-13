@@ -15,8 +15,8 @@ export default class UserService {
     return this.usersRepository.find();
   }
 
-  getUser(body: UserDTO): Promise<Users> {
-    return this.usersRepository.findOneOrFail({ where: { login: body.login } });
+  getUser(login: string): Promise<Users> {
+    return this.usersRepository.findOneOrFail({ where: { login } });
   }
 
   getUserById(id: number): Promise<Users> {

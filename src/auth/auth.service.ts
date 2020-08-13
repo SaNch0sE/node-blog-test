@@ -1,27 +1,35 @@
 import {
-  AuthStatus,
-  AuthResponse,
-  Payload,
-  UpdatedTokens,
+  IAuthStatus,
+  IPayload,
+  ITokens,
 } from 'src/interfaces';
-import { Injectable, Logger } from '@nestjs/common';
+import { Redis } from 'ioredis';
+import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
-import { Request } from 'express';
 import UserDTO from 'src/dto/user.dto';
-import UserService from './user.service';
+import { RedisService } from 'nestjs-redis';
+import { JwtService } from '@nestjs/jwt';
+import UsersService from '../users/users.service';
 
 @Injectable()
 export default class AuthService {
-  constructor(private readonly userService: UserService) {}
+  private readonly redisClient: Redis;
 
-  async register(user: UserDTO): Promise<AuthStatus> {
-    const status: AuthStatus = {
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly redisService: RedisService,
+  ) {
+    this.redisClient = redisService.getClient();
+  }
+
+  async register(user: UserDTO): Promise<IAuthStatus> {
+    const status: IAuthStatus = {
       status: 'Success',
       message: 'No errors',
     };
     try {
-      await this.userService.createUser(user);
+      await this.usersService.createUser(user);
     } catch (err) {
       status.status = 'Error';
       status.message = err;
@@ -29,83 +37,54 @@ export default class AuthService {
     return status;
   }
 
-  createToken(user: UserDTO): AuthResponse {
-    const token = jwt.sign(
-      {
-        user_id: user.id,
-      },
-      process.env.KEY,
+  async login(login): Promise<ITokens> {
+    const { id } = await this.usersService.getUser(login);
+    const payload = { user_id: id };
+
+    const accessToken = this.jwtService.sign(
+      payload,
       { expiresIn: process.env.ACCESS_EXPIRES },
     );
-    return { token };
-  }
 
-  createRefresh(user: UserDTO): AuthResponse {
-    const refresh = jwt.sign(
-      {
-        user_id: user.id,
-      },
-      process.env.KEY,
+    const refreshToken = this.jwtService.sign(
+      payload,
       { expiresIn: process.env.REFRESH_EXPIRES },
     );
-    return { refresh };
+
+    const key = payload.user_id.toString();
+    await this.redisClient.set(
+      key,
+      refreshToken,
+      'EX',
+      86400,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
-  updateToken(req: Request): UpdatedTokens {
-    let status = false;
-    const resp: UpdatedTokens = {};
-    resp.expired = 0;
-    // Checking access token
-    try {
-      const token = req.headers.authorization.split(' ')[1];
-      jwt.verify(token, process.env.KEY);
-      status = true;
-    } catch (err) {
-      Logger.error('Access token expired', err, 'BlogController', true);
-    }
-    if (status) {
-      Logger.log(`Request -> ${req.path}`, 'BlogController', true);
-      resp.expired = 2;
-    }
-    Logger.log('Trying to create new token', 'BlogController', true);
-    let decoded: any;
-    try {
-      decoded = jwt.verify(req.cookies.refresh, process.env.KEY);
-      status = true;
-    } catch (err) {
-      Logger.error('Refresh token expired', err, 'BlogController', true);
-    }
-    // Checking refresh token
-    if (status) {
-      const access = jwt.sign({ user_id: decoded.user_id }, process.env.KEY, {
-        expiresIn: process.env.ACCESS_EXPIRES,
-      });
-      resp.header = ['Authorization', `Bearer ${access}`];
-      resp.cookie = [
-        'refresh',
-        jwt.sign({ user_id: decoded.user_id }, process.env.KEY, {
-          expiresIn: process.env.REFRESH_EXPIRES,
-        }),
-        { expires: new Date(Date.now() + 7200000), httpOnly: true },
-      ];
-      resp.expired = 1;
-      Logger.log(
-        'Creating of access token -> Successful',
-        'BlogController',
-        true,
-      );
-    }
-    return resp;
+  getRefreshTokenById(id: number): Promise<string> {
+    return this.redisClient.get(id.toString());
   }
 
-  async validateUserToken(payload: Payload): Promise<UserDTO> {
-    const user = await this.userService.getUserById(payload.user_id);
+  deleteTokenById(id: number): Promise<number> {
+    return this.redisClient.del(id.toString());
+  }
+
+  deleteAllTokens(): Promise<string> {
+    return this.redisClient.flushall();
+  }
+
+  async validateUserToken(payload: IPayload): Promise<UserDTO> {
+    const user = await this.usersService.getUserById(payload.user_id);
     return user;
   }
 
-  async validateUser(body: UserDTO): Promise<AuthStatus | null> {
-    const user = await this.userService.getUser(body);
-    let authStatus: AuthStatus;
+  async validateUser(body: UserDTO): Promise<IAuthStatus | null> {
+    const user = await this.usersService.getUser(body.login);
+    let authStatus: IAuthStatus;
     if (user && bcrypt.compareSync(body.password, user.password)) {
       authStatus = {
         status: 'Success',
