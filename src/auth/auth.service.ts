@@ -5,7 +5,6 @@ import {
 } from 'src/interfaces';
 import { Redis } from 'ioredis';
 import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import UserDTO from 'src/dto/user.dto';
 import { RedisService } from 'nestjs-redis';
 import { JwtService } from '@nestjs/jwt';
@@ -37,9 +36,8 @@ export default class AuthService {
     return status;
   }
 
-  async login(login): Promise<ITokens> {
-    const { id } = await this.usersService.getUser(login);
-    const payload = { user_id: id };
+  async login(user_id): Promise<ITokens> {
+    const payload = { user_id };
 
     const accessToken = this.jwtService.sign(
       payload,
@@ -80,17 +78,5 @@ export default class AuthService {
   async validateUserToken(payload: IPayload): Promise<UserDTO> {
     const user = await this.usersService.getUserById(payload.user_id);
     return user;
-  }
-
-  async validateUser(body: UserDTO): Promise<IAuthStatus | null> {
-    const user = await this.usersService.getUser(body.login);
-    let authStatus: IAuthStatus;
-    if (user && bcrypt.compareSync(body.password, user.password)) {
-      authStatus = {
-        status: 'Success',
-        message: 'No errors',
-      };
-    }
-    return authStatus;
   }
 }

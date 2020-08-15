@@ -21,22 +21,33 @@ export default class BlogService {
     private articleLikesRepository: Repository<ArticleLikes>,
     @InjectRepository(CommentLikes)
     private commentLikesRepository: Repository<CommentLikes>,
-  ) {}
+  ) { }
 
   // Blog services
   getArticle(id: number): Promise<Articles> {
     return this.articlesRepository
       .createQueryBuilder('articles')
+      .select([
+        'articles.title',
+        'articles.created_at',
+        'users.id',
+        'users.full_name',
+        'articles.content',
+      ])
       .leftJoin('articles.likes', 'article_likes')
       .loadRelationCountAndMap('articles.likes', 'articles.likes')
-      .leftJoinAndMapOne('articles.author', 'articles.author', 'users')
+      .leftJoin('articles.author', 'users')
       .where({ id })
-      .printSql()
       .getOne();
   }
 
   getArticles(): Promise<Articles[]> {
-    return this.articlesRepository.find();
+    return this.articlesRepository
+      .createQueryBuilder('articles')
+      .leftJoin('articles.likes', 'article_likes')
+      .loadRelationCountAndMap('articles.likes', 'articles.likes')
+      .leftJoinAndMapOne('articles.author', 'articles.author', 'users.full_name')
+      .getMany();
   }
 
   getUserArticles(id: number): Promise<Articles[]> {

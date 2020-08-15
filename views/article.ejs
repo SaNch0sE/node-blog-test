@@ -9,8 +9,7 @@
     <%- include('nav'); %>
     <div>
         <h3><%- article.title %></h3>
-        <p><%- article.author.id %><br/><%- article.created_at.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
-        <p><%- article.author.password %> </p>
+        <p><%- article.author.full_name %><br/><%- article.created_at.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
         <p>Content:<br/><%- article.content %></p>
         <span>Likes: <button><%- article.likes %></button></span>
     </div>

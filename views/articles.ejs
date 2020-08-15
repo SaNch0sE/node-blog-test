@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles</title>
+</head>
+<body>
+    <%- include('nav'); %>
+    <div class="articles">
+        <ul>
+            <% articles.forEach(article => { %>
+                <li class="article">
+                    <h4><%- article.title %> <%- article.id %> </h4>
+                    <p>By <%- article.author.full_name %><br/><%- article.created_at.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                    <span>Likes: <%- article.likes %></span>
+                </li>
+            <% }) %>
+        </ul>
+    </div>
+</body>
+</html>

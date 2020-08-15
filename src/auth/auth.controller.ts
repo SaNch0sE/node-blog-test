@@ -46,14 +46,13 @@ export default class AuthController {
     res.json(user);
   }
 
-  @UseGuards(AuthGuard('local'))
   @Post('login')
   async signIn(@Body() body: UserDTO, @Res() res: Response): Promise<void> {
     const user = await this.usersService.getUser(body.login);
     if (!user) {
       res.json({ error: 'Bad creditionals' });
     } else {
-      const tokens = await this.authService.login(user);
+      const tokens = await this.authService.login(user.id);
       res.setHeader('Authorization', `Bearer ${tokens.accessToken}`);
       res.cookie('refresh', tokens.refreshToken, {
         expires: new Date(Date.now() + 7200000),
@@ -66,12 +65,10 @@ export default class AuthController {
   }
 
   @Post('update-token')
-  @UseGuards(AuthGuard('jwt'))
   async updateToken(@Req() req: Request, @Res() res: Response): Promise<void> {
     const refreshToken = req.cookies.refresh;
     const verifiedUser = this.jwtService.verify(refreshToken);
-    const oldRefreshToken = this.authService.getRefreshTokenById(verifiedUser.user_id);
-
+    const oldRefreshToken = await this.authService.getRefreshTokenById(verifiedUser.user_id);
     // if the old refresh token is not equal to request refresh token then this user is unauthorized
     if (!oldRefreshToken || oldRefreshToken !== refreshToken) {
       throw new UnauthorizedException('Authentication credentials were missing or incorrect');
@@ -82,22 +79,18 @@ export default class AuthController {
     };
 
     const newTokens = await this.authService.login({ id: payload.user_id });
-    res.json(newTokens);
     res.setHeader('Authorization', `Bearer ${newTokens.accessToken}`);
     res.cookie('refresh', newTokens.refreshToken, {
       expires: new Date(Date.now() + 7200000),
       httpOnly: true,
     });
+    res.json(newTokens);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('logout')
-  async getArticles(@Res() res: Response): Promise<void> {
-    res.cookie('refresh', 'logged out', {
-      expires: new Date(Date.now()),
-      httpOnly: true,
-    });
-    res.setHeader('Authorization', 'logged out');
+  async getArticles(@Body() body: { user_id: number }, @Res() res: Response): Promise<void> {
+    this.authService.deleteTokenById(body.user_id);
     const resp: IAuthStatus = {
       status: 'Success',
       message: 'Logged out',

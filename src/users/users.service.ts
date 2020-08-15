@@ -16,11 +16,11 @@ export default class UserService {
   }
 
   getUser(login: string): Promise<Users> {
-    return this.usersRepository.findOneOrFail({ where: { login } });
+    return this.usersRepository.findOne({ login });
   }
 
   getUserById(id: number): Promise<Users> {
-    return this.usersRepository.findOneOrFail(id);
+    return this.usersRepository.findOne(id);
   }
 
   async createUser(user: UserDTO): Promise<Users | { error: string }> {

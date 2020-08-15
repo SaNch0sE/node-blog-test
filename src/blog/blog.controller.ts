@@ -22,25 +22,28 @@ export default class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   /*
-    //// View calls
-    */
+  //// View calls
+  */
   @UseGuards(AuthGuard('jwt'))
   @Get('article/:id')
-  @Render('article')
   async getArticle(
     @Res() res: Response,
     @Param() params: { id: number },
-  ): Promise<{ article: Articles }> {
+  ): Promise<void> {
     const article: Articles = await this.blogService.getArticle(params.id);
-    return { article };
+    if (article) {
+      res.render('article', { article });
+    } else {
+      res.render('articleDoNotExist');
+    }
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('articles')
   @Render('articles')
-  async getArticles(): Promise<Articles[]> {
+  async getArticles(): Promise<{ articles: Articles[] }> {
     const articles: Articles[] = await this.blogService.getArticles();
-    return articles;
+    return { articles };
   }
 
   @UseGuards(AuthGuard('jwt'))
