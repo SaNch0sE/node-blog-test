@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="/js/modules/ajax.js"></script>
+    <script type="text/javascript" src="/js/login.js"></script>
+    <title>Sign in</title>
+</head>
+<body>
+    <%- include('nav'); %>
+    <div class="login">
+        <h3>Please sign in before doing something :)</h3>
+        <div>
+            <label>Login:</label>
+            <input id="login" type="text"/>
+            <label>Password</label>
+            <input id="password" type="password" />
+            <button onclick="login()">Sign in</button>
+        </div>
+    </div>
+</body>
+</html>

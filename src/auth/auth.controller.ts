@@ -27,15 +27,11 @@ export default class AuthController {
 
   @Get('register')
   @Render('register')
-  signUpView(): null {
-    return null;
-  }
+  signUpView(): void {}
 
   @Get('login')
   @Render('login')
-  signInView(): null {
-    return null;
-  }
+  signInView(): void {}
 
   /*
   //// Api calls
@@ -57,6 +53,8 @@ export default class AuthController {
       res.cookie('refresh', tokens.refreshToken, {
         expires: new Date(Date.now() + 7200000),
         httpOnly: true,
+        sameSite: true,
+        secure: true,
       });
       res.json({
         user_id: user.id,
@@ -83,6 +81,8 @@ export default class AuthController {
     res.cookie('refresh', newTokens.refreshToken, {
       expires: new Date(Date.now() + 7200000),
       httpOnly: true,
+      sameSite: true,
+      secure: true,
     });
     res.json(newTokens);
   }
